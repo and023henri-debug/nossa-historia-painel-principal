@@ -1,0 +1,1037 @@
+<!DOCTYPE html>
+<html lang="pt-PT">
+<head>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.8.0/firebase-firestore-compat.js"></script>
+    
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>O Nosso Novo Sonho</title>
+    
+    <!-- Importando o Tailwind CSS para os estilos -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    
+    <!-- Importando fontes elegantes do Google Fonts -->
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,600;0,700;1,400&family=Dancing+Script:wght@400;700&display=swap" rel="stylesheet">
+
+    <style>
+        .font-serif {
+            font-family: 'Playfair Display', serif;
+        }
+        .font-cursive {
+            font-family: 'Dancing Script', cursive;
+        }
+
+        /* Animação das lanternas e corações subindo */
+        @keyframes float {
+            0% { transform: translateY(0) scale(0.5); opacity: 0; }
+            20% { opacity: var(--max-opacity); }
+            80% { opacity: var(--max-opacity); }
+            100% { transform: translateY(-120vh) scale(1.2); opacity: 0; }
+        }
+        .heart-float {
+            position: absolute;
+            bottom: -10%;
+            animation: float linear infinite;
+        }
+
+        /* Animação de transição de tela */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(15px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+        .animate-fade-in {
+            animation: fadeIn 1s ease-out forwards;
+        }
+
+        .hidden-screen {
+            display: none !important;
+        }
+
+        /* Animação de explosão de luz (Flor Mágica) */
+        @keyframes explode {
+            0% { transform: translate(-50%, -50%) scale(1); opacity: 1; }
+            100% { transform: translate(calc(-50% + var(--tx)), calc(-50% + var(--ty))) scale(0); opacity: 0; }
+        }
+        .light-particle {
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            pointer-events: none;
+            z-index: 50;
+            animation: explode ease-out forwards;
+        }
+
+        /* Scrollbar personalizada temática */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #110415; 
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #facc15; /* Amarelo dourado */
+            border-radius: 10px;
+        }
+        * {
+            scrollbar-width: thin;
+            scrollbar-color: #facc15 #110415;
+        }
+
+        /* Estilo do divisor com sol/brilho */
+        .divider-container {
+            display: flex;
+            align-items: center;
+            width: 100%;
+            margin: 20px 0;
+        }
+        .divider-line {
+            flex-grow: 1;
+            height: 1px;
+            background: linear-gradient(to right, transparent, rgba(250,204,21,0.5), transparent);
+        }
+
+        /* Ocultar barra de rolagem horizontal para as miniaturas */
+        .scrollbar-hide::-webkit-scrollbar {
+            display: none;
+        }
+        .scrollbar-hide {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+</head>
+<!-- Fundo roxo noturno clássico da cena do barco -->
+<body class="bg-gradient-to-b from-[#0d071a] via-[#211042] to-[#0d071a] bg-fixed relative overflow-x-hidden font-sans text-white">
+
+    <!-- Recipiente para as lanternas e corações flutuantes -->
+    <div id="hearts-container" class="fixed inset-0 pointer-events-none z-0"></div>
+
+    <div class="flex flex-col items-center justify-center min-h-screen p-4 w-full relative z-10">
+        
+        <div id="bg-sol-login" class="fixed inset-0 flex justify-center items-center pointer-events-none z-0 overflow-hidden opacity-20 mix-blend-screen transition-all duration-1000">
+            <img src="r-fundo2.png" class="w-auto max-w-[450px] md:max-w-[700px] object-contain drop-shadow-[0_0_50px_rgba(250,204,21,0.5)] animate-pulse" style="animation-duration: 8s; image-rendering: high-quality;" alt="Sol Mágico">
+        </div>
+
+        <div id="tela-login" class="z-20 flex flex-col items-center max-w-md w-full animate-fade-in relative mt-4">
+            
+            <!-- Brilho de fundo Dourado/Rosa -->
+            <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-gradient-to-r from-[#facc15] to-[#ff6b9e] opacity-20 blur-[80px] rounded-full pointer-events-none z-0"></div>
+            
+            <div class="w-full max-w-[340px] bg-[#1a0524]/70 backdrop-blur-xl border border-[#facc15]/30 rounded-[2.5rem] p-8 sm:p-10 flex flex-col items-center shadow-[0_0_40px_rgba(250,204,21,0.15)] relative z-10 text-center">
+                
+                <!-- Imagem Fofa (Rapunzel e José) -->
+                <div class="w-28 h-28 rounded-full overflow-hidden mb-5 border-[3px] border-[#fde047] shadow-[0_0_30px_rgba(250,204,21,0.5)] relative">
+                    <img id="img-perfil-login" src="image_e3668c.jpg" alt="A Nossa Magia" class="w-full h-full object-cover">
+                    <div class="absolute inset-0 bg-[#facc15]/10 mix-blend-overlay"></div>
+                </div>
+
+                <h2 class="text-3xl font-serif text-white mb-2 drop-shadow-md text-[#fef08a]">A Nossa Magia</h2>
+                <p class="text-white/80 text-sm mb-8 font-light italic">"Vejo enfim a luz brilhar..."</p>
+
+                <div class="w-full relative mb-6">
+                    <label class="text-xs uppercase tracking-widest text-[#fde047] mb-2 block font-semibold opacity-90">Qual é a palavra mágica?</label>
+                    
+                    <!-- Container relativo para colocar o olhinho na input -->
+                    <div class="relative w-full">
+                        <input type="password" id="input-senha" placeholder="Escreve aqui..." class="w-full bg-[#ffffff08] border border-[#facc15]/40 rounded-xl pl-4 pr-12 py-3.5 text-white focus:outline-none focus:border-[#facc15] focus:bg-[#ffffff10] transition-all text-center placeholder-white/20 tracking-[0.2em] font-serif text-lg shadow-inner">
+                        
+                        <!-- Botão Olhinho -->
+                        <button type="button" id="btn-toggle-senha" class="absolute right-4 top-1/2 transform -translate-y-1/2 text-[#fde047] opacity-60 hover:opacity-100 transition-opacity focus:outline-none">
+                            <!-- Ícone de Olho Fechado -->
+                            <svg id="icone-olho-fechado" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13.875 18.825A10.05 10.05 0 0112 19c-4.478 0-8.268-2.943-9.543-7a9.97 9.97 0 011.563-3.029m5.858.908a3 3 0 114.243 4.243M9.878 9.878l4.242 4.242M9.88 9.88l-3.29-3.29m7.532 7.532l3.29 3.29M3 3l3.59 3.59m0 0A9.953 9.953 0 0112 5c4.478 0 8.268 2.943 9.543 7a10.025 10.025 0 01-4.132 5.411m0 0L21 21"></path>
+                            </svg>
+                            <!-- Ícone de Olho Aberto -->
+                            <svg id="icone-olho-aberto" class="w-6 h-6 hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path>
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"></path>
+                            </svg>
+                        </button>
+                    </div>
+                    
+                    <p id="msg-erro" class="text-red-400 text-xs mt-3 text-center hidden font-light bg-red-900/30 py-1 rounded-md">Ups, palavra incorreta! <br><span class="text-white/60 text-[10px]">(Dica: O nome da princesa das lanternas)</span></p>
+                </div>
+
+                <button id="btn-login" class="w-full py-4 bg-gradient-to-r from-[#facc15] to-[#f59e0b] text-[#1a0524] font-bold rounded-xl transition-all duration-300 transform hover:scale-105 active:scale-95 shadow-[0_0_20px_rgba(250,204,21,0.4)] flex justify-center items-center gap-2">
+                    <svg class="w-5 h-5 text-[#1a0524]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14 5l7 7m0 0l-7 7m7-7H3"></path></svg>
+                    Aceder à Magia
+                </button>
+            </div>
+        </div>
+
+        <div id="bg-r-magico" class="fixed inset-0 flex justify-center items-center pointer-events-none z-0 hidden-screen overflow-hidden opacity-20 mix-blend-screen transition-all duration-1000">
+            <img src="r-fundo.png" class="w-auto max-w-[350px] md:max-w-[550px] object-contain drop-shadow-[0_0_50px_rgba(250,204,21,0.4)] animate-pulse" style="animation-duration: 6s; image-rendering: high-quality;" alt="R Mágico">
+        </div>
+        <div id="tela-entrada" class="z-10 flex flex-col items-center max-w-md w-full hidden-screen mt-10">
+            <div class="mb-10">
+                <svg class="w-24 h-24 text-[#facc15] fill-[#facc15] drop-shadow-[0_0_35px_rgba(250,204,21,0.7)] animate-pulse" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+            </div>
+            <p class="text-white/90 text-lg sm:text-xl mb-12 font-light tracking-wide text-center">O teu novo sonho começa aqui</p>
+            <button id="btn-revelar" class="flex items-center gap-4 px-8 py-5 bg-[#ffffff08] hover:bg-[#ffffff15] backdrop-blur-md border border-white/10 rounded-full transition-all duration-500 transform hover:scale-105 active:scale-95 group shadow-[0_0_30px_rgba(250,204,21,0.15)] w-full max-w-[320px] justify-center cursor-pointer">
+                <span class="text-xl font-serif text-white tracking-wide">Clica aqui, meu amor</span>
+            </button>
+        </div>
+
+        <!-- =========================================
+             ECRÃ 2: CONTADOR 
+             ========================================= -->
+        <div id="tela-contador" class="z-10 flex flex-col items-center max-w-md w-full hidden-screen mt-8">
+            <div class="mb-6">
+                <svg class="w-16 h-16 text-[#facc15] fill-[#facc15] drop-shadow-[0_0_25px_rgba(250,204,21,0.6)] animate-pulse" viewBox="0 0 24 24">
+                    <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                </svg>
+            </div>
+            <h1 class="text-4xl sm:text-5xl font-serif text-white mb-6 text-center leading-tight">Para a minha<br/><span class="text-[#fde047]">Princesa</span></h1>
+            <div class="flex items-center gap-2 text-gray-300/80 mb-10 text-sm font-light">
+                <span id="texto-data">Juntos desde...</span>
+            </div>
+
+            <!-- Cartões de Anos, Meses e Dias -->
+            <div class="flex justify-center gap-3 mb-8 w-full relative">
+                <!-- Efeito de brilho de fundo dourado -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[280px] h-[180px] bg-[#facc15] opacity-15 blur-[70px] rounded-full pointer-events-none z-0"></div>
+
+                <div class="flex flex-col items-center justify-center bg-[#1a0524]/60 backdrop-blur-md border border-[#facc15]/30 rounded-2xl w-24 h-32 shadow-[0_0_25px_rgba(250,204,21,0.2)] transition-transform hover:scale-105 z-10">
+                    <span id="valor-anos" class="text-4xl font-serif text-white mb-2">0</span>
+                    <span class="text-xs uppercase tracking-widest text-[#fef08a]/70">Anos</span>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-[#1a0524]/60 backdrop-blur-md border border-[#facc15]/30 rounded-2xl w-24 h-32 shadow-[0_0_25px_rgba(250,204,21,0.2)] transition-transform hover:scale-105 z-10">
+                    <span id="valor-meses" class="text-4xl font-serif text-white mb-2">0</span>
+                    <span class="text-xs uppercase tracking-widest text-[#fef08a]/70">Meses</span>
+                </div>
+                <div class="flex flex-col items-center justify-center bg-[#1a0524]/60 backdrop-blur-md border border-[#facc15]/30 rounded-2xl w-24 h-32 shadow-[0_0_25px_rgba(250,204,21,0.2)] transition-transform hover:scale-105 z-10">
+                    <span id="valor-dias" class="text-4xl font-serif text-white mb-2">0</span>
+                    <span class="text-xs uppercase tracking-widest text-[#fef08a]/70">Dias</span>
+                </div>
+            </div>
+
+            <!-- Cronómetro (Horas : Minutos : Segundos) -->
+            <div class="bg-[#1a0524]/60 backdrop-blur-lg border border-[#facc15]/30 rounded-full px-8 py-3 shadow-[0_0_25px_rgba(250,204,21,0.2)] mb-8 text-xl font-mono tracking-widest text-white/90 relative z-10">
+                <span id="valor-relogio">00 : 00 : 00</span>
+            </div>
+
+            <div class="mt-8 animate-bounce flex flex-col items-center text-[#fef08a]/60">
+                <span class="text-[10px] uppercase tracking-widest mb-2">Mais luzes abaixo</span>
+                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 14l-7 7m0 0l-7-7m7 7V3"></path></svg>
+            </div>
+        </div>
+    </div>
+
+    <!-- NOVAS SECÇÕES -->
+    <div id="novas-secoes" class="w-full flex flex-col items-center p-4 min-h-screen hidden-screen relative z-10">
+        <div class="w-full max-w-md border-t border-white/10 pt-16 mt-8 flex flex-col items-center">
+            
+            <!-- CARTÃO DE MÚSICA 1 -->
+            <div class="relative w-full flex justify-center mb-10">
+                <!-- Efeito de brilho neon dourado -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#facc15] opacity-15 blur-[80px] rounded-full pointer-events-none z-0"></div>
+                
+                <div id="music-card" class="w-full max-w-[340px] bg-[#1a0524]/80 backdrop-blur-xl border border-[#facc15]/30 rounded-[2rem] p-8 flex flex-col items-center shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10 transition-all duration-500">
+                    
+                    <!-- Cabeçalho da Música -->
+                    <div id="music-header" class="flex flex-col items-center w-full transition-all duration-500">
+                        <div class="mb-4 transition-all duration-300" id="music-icon-container">
+                            <svg class="w-10 h-10 text-[#facc15] drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3" fill="currentColor"></circle>
+                                <circle cx="18" cy="16" r="3" fill="currentColor"></circle>
+                            </svg>
+                        </div>
+                        <h2 id="music-title" class="text-2xl font-serif text-white mb-2 transition-all duration-300 flex items-center justify-center">A Nossa Música</h2>
+                        <p id="music-subtitle" class="text-white/70 text-sm mb-8 font-light transition-all duration-300 text-center">A trilha sonora do nosso amor</p>
+                    </div>
+                    
+                    <!-- ESTADO 1: Interface Customizada -->
+                    <div id="custom-music-ui" class="w-full flex flex-col items-center">
+                        <button id="btn-reveal-music" class="flex items-center justify-center gap-3 bg-[#00000040] hover:bg-[#00000060] border border-[#facc15]/20 rounded-2xl py-4 px-6 w-full mb-6 transition-all duration-300 cursor-pointer group">
+                            <svg class="w-6 h-6 text-white group-hover:text-[#facc15] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                            <span class="text-white font-medium text-sm">Clica para descobrir</span>
+                        </button>
+                        
+                        <!-- Barrinha de progresso -->
+                        <div class="w-full flex items-center gap-4 mb-4">
+                            <div class="flex-1 bg-white/20 h-1 rounded-full">
+                                <div class="bg-[#facc15]/60 h-full rounded-full w-0"></div>
+                            </div>
+                            <span class="text-[10px] text-white/50 font-mono">00:00/00:00</span>
+                        </div>
+
+                        <!-- Ícones de Notas Musicais -->
+                        <div class="flex justify-center gap-6 mt-2 text-[#facc15]/70">
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0.2s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0.4s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO 2: Player do Spotify -->
+                    <div id="spotify-player-container" class="w-full hidden animate-fade-in">
+    <iframe id="iframe-musica-principal" style="border-radius:12px" src="" width="100%" height="152" frameBorder="0" allowfullscreen="" allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" loading="lazy"></iframe>
+</div>
+                </div>
+            </div>
+
+            <!-- CARTÃO DE MÚSICA 2 -->
+            <div class="relative w-full flex justify-center mb-12">
+                <!-- Efeito de brilho neon dourado -->
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] bg-[#facc15] opacity-15 blur-[80px] rounded-full pointer-events-none z-0"></div>
+                
+                <div id="music-card-2" class="w-full max-w-[340px] bg-[#1a0524]/80 backdrop-blur-xl border border-[#facc15]/30 rounded-[2rem] p-8 flex flex-col items-center shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10 transition-all duration-500">
+                    
+                    <!-- Cabeçalho da Música -->
+                    <div id="music-header-2" class="flex flex-col items-center w-full transition-all duration-500">
+                        <div class="mb-4 transition-all duration-300" id="music-icon-container-2">
+                            <svg class="w-10 h-10 text-[#facc15] drop-shadow-[0_0_12px_rgba(250,204,21,0.8)] animate-pulse" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="animation-delay: 1s;">
+                                <path d="M9 18V5l12-2v13"></path>
+                                <circle cx="6" cy="18" r="3" fill="currentColor"></circle>
+                                <circle cx="18" cy="16" r="3" fill="currentColor"></circle>
+                            </svg>
+                        </div>
+                        <h2 id="music-title-2" class="text-2xl font-serif text-white mb-2 transition-all duration-300 flex items-center justify-center">Nossas Trilhas Sonoras</h2>
+                        <p id="music-subtitle-2" class="text-white/70 text-sm mb-8 font-light transition-all duration-300 text-center">As nossas outras músicas especiais</p>
+                    </div>
+                    
+                    <!-- ESTADO 1: Interface Customizada -->
+                    <div id="custom-music-ui-2" class="w-full flex flex-col items-center">
+                        <button id="btn-reveal-music-2" class="flex items-center justify-center gap-3 bg-[#00000040] hover:bg-[#00000060] border border-[#facc15]/20 rounded-2xl py-4 px-6 w-full mb-6 transition-all duration-300 cursor-pointer group">
+                            <svg class="w-6 h-6 text-white group-hover:text-[#facc15] transition-colors" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M14.752 11.168l-3.197-2.132A1 1 0 0010 9.87v4.263a1 1 0 001.555.832l3.197-2.132a1 1 0 000-1.664z"/></svg>
+                            <span class="text-white font-medium text-sm">Clica para descobrir</span>
+                        </button>
+                        
+                        <!-- Barrinha de progresso -->
+                        <div class="w-full flex items-center gap-4 mb-4">
+                            <div class="flex-1 bg-white/20 h-1 rounded-full">
+                                <div class="bg-[#facc15]/60 h-full rounded-full w-0"></div>
+                            </div>
+                            <span class="text-[10px] text-white/50 font-mono">00:00/00:00</span>
+                        </div>
+
+                        <!-- Ícones de Notas Musicais -->
+                        <div class="flex justify-center gap-6 mt-2 text-[#facc15]/70">
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0.1s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0.3s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                            <svg class="w-4 h-4 animate-bounce" style="animation-delay: 0.5s" fill="currentColor" viewBox="0 0 24 24"><path d="M12 3v10.55c-.59-.34-1.27-.55-2-.55-2.21 0-4 1.79-4 4s1.79 4 4 4 4-1.79 4-4V7h4V3h-6z"/></svg>
+                        </div>
+                    </div>
+
+                    <!-- ESTADO 2: Player do Spotify (Nova Música) -->
+                    <div id="spotify-player-container-2" class="w-full hidden animate-fade-in">
+                        <div id="container-iframes-trilhas" class="flex flex-col gap-3 w-full">
+                            </div>
+                    </div>
+
+            <!-- =========================================
+                 DIVISOR DE SECÇÃO (Sol de Corona)
+                 ========================================= -->
+            <div class="w-full max-w-[340px] flex items-center justify-center my-6 opacity-90">
+                <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                <div class="mx-4">
+                    <svg class="w-6 h-6 text-[#fde047] drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] fill-current animate-spin-slow" viewBox="0 0 24 24" style="animation: spin 10s linear infinite;">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+            </div>
+
+            <!-- CARTA DE AMOR MÁGICA -->
+            <div class="relative w-full flex justify-center mt-4">
+                <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[320px] h-[320px] bg-gradient-to-b from-[#facc15] to-[#ff6b9e] opacity-15 blur-[80px] rounded-full pointer-events-none z-0"></div>
+                
+                <div class="w-full max-w-[360px] bg-[#1a0524]/60 backdrop-blur-xl border border-[#facc15]/30 rounded-[2.5rem] p-10 flex flex-col items-center shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10">
+                    
+                    <div class="divider-container">
+                        <div class="divider-line"></div>
+                        <span class="text-[#facc15] mx-3 text-lg">✨</span>
+                        <div class="divider-line"></div>
+                    </div>
+
+                    <div class="text-center my-6">
+                        <p class="text-white/90 text-lg sm:text-xl font-serif italic leading-relaxed mb-6">
+                            "Tal como a Rapunzel descobriu um mundo mágico fora da torre, eu descobri um mundo de novas cores quando te conheci. Amo-te em cada detalhe, em cada sorriso iluminado."
+                        </p>
+                        <p class="text-white/90 text-lg sm:text-xl font-serif italic leading-relaxed mb-6">
+                            "Tu eras o sonho que eu não sabia que tinha. E agora que vejo a luz, percebo que o meu lugar e a minha maior aventura é sempre contigo."
+                        </p>
+                        <span class="text-[#facc15] text-2xl drop-shadow-[0_0_10px_rgba(250,204,21,0.8)]">☀️</span>
+                    </div>
+
+                    <div class="divider-container">
+                        <div class="divider-line"></div>
+                        <span class="text-[#facc15] mx-3 text-lg">✨</span>
+                        <div class="divider-line"></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIVISOR -->
+            <div class="w-full max-w-[340px] flex items-center justify-center my-10 opacity-90">
+                <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                <div class="mx-4">
+                    <svg class="w-6 h-6 text-[#fde047] drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] fill-current" viewBox="0 0 24 24" style="animation: spin 10s linear infinite;">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+            </div>
+
+            <!-- =========================================
+                 CARROSSEL DE FOTOS (TEMA ENROLADOS)
+                 ========================================= -->
+            <div class="w-full max-w-md flex flex-col items-center mt-2">
+                <h2 class="text-3xl font-serif text-white mb-2 text-center drop-shadow-lg text-[#fef08a]">As Nossas Aventuras</h2>
+                <p class="text-white/70 text-sm mb-8 font-light text-center">Memórias guardadas sob a luz das lanternas</p>
+
+                <div class="relative w-full flex justify-center">
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[320px] h-[400px] bg-gradient-to-tr from-[#facc15] to-[#c026d3] opacity-20 blur-[90px] rounded-[3rem] pointer-events-none z-0"></div>
+
+                    <div class="w-full max-w-[360px] bg-[#1a0524]/60 backdrop-blur-xl border border-[#facc15]/30 rounded-[2rem] p-4 pt-10 sm:p-6 sm:pt-10 flex flex-col items-center shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10">
+                        
+                        <div class="absolute top-5 right-6 text-[#fde047] text-sm font-sans font-semibold tracking-widest drop-shadow-md">
+                            <span id="carousel-counter">1 / 4</span>
+                        </div>
+
+                        <div class="relative w-full flex items-center justify-center">
+                            
+                            <button id="btn-prev" class="absolute left-0 z-10 w-8 h-8 flex items-center justify-center text-white/50 hover:text-[#facc15] transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path></svg>
+                            </button>
+
+                            <div class="relative w-full max-w-[240px] aspect-[4/5] rounded-xl overflow-hidden shadow-[0_0_20px_rgba(0,0,0,0.8)] group border border-white/10">
+                                <img id="carousel-img" src="" class="w-full h-full object-cover transition-opacity duration-300" alt="Momentos" />
+                                
+                                <div class="absolute inset-x-0 bottom-0 h-1/3 bg-gradient-to-t from-[#110415]/90 to-transparent pointer-events-none"></div>
+
+                                <div class="absolute bottom-4 left-0 right-0 flex justify-center gap-1.5" id="carousel-indicators">
+                                </div>
+                            </div>
+
+                            <button id="btn-next" class="absolute right-0 z-10 w-8 h-8 flex items-center justify-center text-white/50 hover:text-[#facc15] transition-colors cursor-pointer">
+                                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"></path></svg>
+                            </button>
+                        </div>
+
+                        <p id="carousel-caption" class="text-[#fde047] text-lg italic mt-6 text-center drop-shadow-md font-light tracking-wide transition-opacity duration-300">
+                            <!-- Legenda entra aqui -->
+                        </p>
+
+                        <div id="carousel-thumbnails" class="flex justify-center gap-3 mt-6 w-full overflow-x-auto pb-2 px-2 scrollbar-hide">
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- DIVISOR -->
+            <div class="w-full max-w-[340px] flex items-center justify-center my-10 opacity-90">
+                <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                <div class="mx-4">
+                    <svg class="w-6 h-6 text-[#fde047] drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] fill-current" viewBox="0 0 24 24" style="animation: spin 10s linear infinite;">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+            </div>
+
+            <!-- =========================================
+                 DIÁRIO DO AMOR (DIÁRIO DAS LANTERNAS)
+                 ========================================= -->
+            <div class="w-full max-w-md flex flex-col items-center mt-2 mb-12">
+                <h2 class="text-3xl font-serif text-white mb-2 text-center drop-shadow-lg text-[#fef08a]">O Nosso Diário</h2>
+                <p class="text-white/70 text-sm mb-8 font-light text-center">Páginas de uma história encantada</p>
+
+                <div class="relative w-full flex justify-center">
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[320px] h-[350px] bg-[#facc15] opacity-15 blur-[80px] rounded-full pointer-events-none z-0"></div>
+
+                    <div class="w-full max-w-[360px] bg-[#1a0524]/60 backdrop-blur-xl border border-[#facc15]/30 rounded-[2rem] p-6 sm:p-8 flex flex-col shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10">
+                        
+                        <div id="diary-entries-container" class="w-full">
+                        </div>
+
+                        <div id="diary-form" class="hidden flex-col gap-4 mt-4 w-full border-t border-[#facc15]/20 pt-6">
+                            <input id="diary-title-input" type="text" placeholder="Título da memória..." class="bg-transparent border-b border-[#facc15]/40 text-white focus:outline-none focus:border-[#facc15] p-2 font-serif text-lg placeholder-white/40 transition-colors" />
+                            
+                            <textarea id="diary-text-input" placeholder="O que sentiste neste dia mágico?" class="bg-[#00000040] border border-[#facc15]/30 rounded-xl text-white focus:outline-none focus:border-[#facc15] p-3 text-sm font-light italic resize-none h-28 placeholder-white/30 transition-colors"></textarea>
+                            
+                            <div class="flex gap-3 justify-end mt-2">
+                                <button id="btn-cancel-memory" class="px-4 py-2 text-white/50 hover:text-white text-sm transition-colors cursor-pointer rounded-xl">Cancelar</button>
+                                <button id="btn-save-memory" class="px-5 py-2 bg-[#facc15]/20 hover:bg-[#facc15]/40 border border-[#facc15]/50 rounded-xl text-[#fde047] font-medium text-sm transition-colors shadow-[0_0_10px_rgba(250,204,21,0.2)] cursor-pointer">Guardar Memória</button>
+                            </div>
+                        </div>
+
+                        <button id="btn-add-memory" class="flex items-center justify-center gap-2 mt-4 py-3 px-4 bg-[#facc15]/10 hover:bg-[#facc15]/20 border border-[#facc15]/40 rounded-xl transition-colors duration-300 text-[#fde047] text-sm font-medium cursor-pointer w-full">
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path></svg>
+                            Escrever novo capítulo
+                        </button>
+
+                    </div>
+                </div>
+            </div>
+
+            <!-- =========================================
+                 DIVISOR DE SECÇÃO (Sol de Corona)
+                 ========================================= -->
+            <div class="w-full max-w-[340px] flex items-center justify-center my-10 opacity-90">
+                <div class="flex-1 h-[1px] bg-gradient-to-r from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+                <div class="mx-4">
+                    <svg class="w-6 h-6 text-[#fde047] drop-shadow-[0_0_10px_rgba(250,204,21,0.8)] fill-current animate-spin-slow" viewBox="0 0 24 24" style="animation: spin 10s linear infinite;">
+                        <path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/>
+                    </svg>
+                </div>
+                <div class="flex-1 h-[1px] bg-gradient-to-l from-transparent via-[#facc15] to-[#fef08a] shadow-[0_0_8px_rgba(250,204,21,0.6)]"></div>
+            </div>
+
+            <!-- =========================================
+                 MURAL DE FOTOS MÁGICO
+                 ========================================= -->
+            <div class="w-full max-w-md flex flex-col items-center mt-2 mb-12">
+                <h2 class="text-3xl font-serif text-white mb-2 text-center drop-shadow-lg text-[#fef08a]">O Nosso Mural</h2>
+                <p class="text-white/70 text-sm mb-8 font-light text-center">As nossas recordações espalhadas como luzes</p>
+
+                <div class="relative w-full flex justify-center">
+                    <!-- Brilho de Fundo -->
+                    <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[320px] h-[350px] bg-[#facc15] opacity-15 blur-[80px] rounded-full pointer-events-none z-0"></div>
+
+                    <div class="w-full max-w-[360px] bg-[#1a0524]/60 backdrop-blur-xl border border-[#facc15]/30 rounded-[2rem] p-6 sm:p-8 flex flex-col shadow-[0_0_30px_rgba(250,204,21,0.15)] relative z-10">
+                        
+                        <!-- Galeria do Mural em Grid (2 colunas) -->
+                        <div id="mural-entries-container" class="grid grid-cols-2 gap-3 w-full">
+                            <!-- Fotos renderizadas via JS -->
+                        </div>
+
+                    </div>
+                </div>
+            </div>
+
+            <div class="h-24"></div> 
+        </div>
+    </div>
+
+    
+    
+    
+    <script>
+        // ==========================================
+        // CONFIGURAÇÃO DO FIREBASE (Motor Mágico)
+        // ==========================================
+        // Import the functions you need from the SDKs you need
+
+// ==========================================
+        // CONFIGURAÇÃO DO FIREBASE (Motor Mágico)
+        // ==========================================
+        const firebaseConfig = {
+            apiKey: "AIzaSyDuPhOBn2OAF-4YnuxMNyD8y7eilTzr-tA",
+            authDomain: "nossa-historia-e469e.firebaseapp.com",
+            projectId: "nossa-historia-e469e",
+            storageBucket: "nossa-historia-e469e.firebasestorage.app",
+            messagingSenderId: "550998902427",
+            appId: "1:550998902427:web:1afebee4399bae3e2f283e"
+        };
+        
+        firebase.initializeApp(firebaseConfig);
+        const db = firebase.firestore();
+
+        // Variáveis Globais
+        let appConfig = null;
+        let muralEntries = [];
+        let diaryEntries = [];
+        let carouselData = [];
+        let DATA_INICIO_NAMORO = '2024-08-31T00:00:00'; 
+
+        // Função para transformar link normal do Spotify em link de Player (Embed)
+        function formatarLinkSpotify(link) {
+            if (!link) return "";
+            if (link.includes("embed")) return link; // Já é um link de player
+            
+            try {
+                // Pega um link como: https://open.spotify.com/track/4PTG3Z6ehGkBFwjybzWkR8
+                // E transforma em: https://open.spotify.com/embed/track/4PTG3Z6ehGkBFwjybzWkR8?theme=0
+                const url = new URL(link);
+                const pathParts = url.pathname.split('/'); 
+                const typeIndex = pathParts.findIndex(p => p === 'track' || p === 'playlist' || p === 'album');
+                
+                if (typeIndex !== -1 && pathParts.length > typeIndex + 1) {
+                    const type = pathParts[typeIndex];
+                    const id = pathParts[typeIndex + 1];
+                    return `https://open.spotify.com/embed/${type}/${id}?theme=0`;
+                }
+            } catch (e) { return ""; }
+            return link;
+        }
+
+        // =========================================
+        // CARREGAMENTO CENTRALIZADO (FIREBASE)
+        // =========================================
+        async function carregarMagiaDoFirebase() {
+            try {
+                // 1. Configurações e Textos
+                const configDoc = await db.collection("projetoAmor").doc("configuracoes").get();
+                if (configDoc.exists) {
+                    appConfig = configDoc.data();
+                    if (appConfig.fotoPerfil) document.getElementById('img-perfil-login').src = appConfig.fotoPerfil;
+                    if (appConfig.dataInicio) DATA_INICIO_NAMORO = `${appConfig.dataInicio}T00:00:00`;
+                    
+                    const dataObjeto = new Date(DATA_INICIO_NAMORO);
+                    const dataFormatada = dataObjeto.toLocaleDateString('pt-PT', { day: 'numeric', month: 'long', year: 'numeric' });
+                    if (document.getElementById('texto-data')) document.getElementById('texto-data').innerText = `Juntos desde ${dataFormatada}`;
+
+                    if(appConfig.carta && appConfig.carta.length > 0) {
+                        const pElements = document.querySelectorAll('.text-center p.font-serif');
+                        if(pElements[0] && appConfig.carta[0]) pElements[0].innerText = `"${appConfig.carta[0]}"`;
+                        if(pElements[1] && appConfig.carta[1]) pElements[1].innerText = `"${appConfig.carta[1]}"`;
+                    }
+                    if(appConfig.fotos && appConfig.fotos.length > 0) {
+                        carouselData = appConfig.fotos.map(f => ({ img: f.url, caption: `"${f.caption}"` }));
+                        updateCarousel(); 
+                    }
+
+                    // --- MÁGICA DAS MÚSICAS ENTRA AQUI ---
+                    if (appConfig.musicas) {
+                        // 1. Música Principal (Esta não muda, é sempre uma)
+                        const iframePrincipal = document.getElementById('iframe-musica-principal');
+                        if (iframePrincipal && appConfig.musicas.principal) {
+                            iframePrincipal.src = formatarLinkSpotify(appConfig.musicas.principal);
+                        }
+
+                        // 2. Trilhas Sonoras (Geradas magicamente quantas houver)
+                        const containerTrilhas = document.getElementById('container-iframes-trilhas');
+                        if (containerTrilhas) {
+                            containerTrilhas.innerHTML = ''; // Limpa antes de gerar
+                            
+                            const listaTrilhas = appConfig.musicas.trilhas || [];
+                            
+                            listaTrilhas.forEach(link => {
+                                if (link) {
+                                    const iframe = document.createElement('iframe');
+                                    iframe.style.borderRadius = "12px";
+                                    iframe.src = formatarLinkSpotify(link);
+                                    iframe.width = "100%";
+                                    iframe.height = "152";
+                                    iframe.frameBorder = "0";
+                                    iframe.allowFullscreen = "";
+                                    iframe.allow = "autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture";
+                                    iframe.loading = "lazy";
+                                    
+                                    containerTrilhas.appendChild(iframe);
+                                }
+                            });
+                        }
+                    }
+                }
+                
+                // 2. Mural
+                const muralDoc = await db.collection("projetoAmor").doc("mural").get();
+                if (muralDoc.exists && muralDoc.data().fotos) {
+                    muralEntries = muralDoc.data().fotos;
+                }
+                renderMural();
+
+                // 3. Diário
+                const diarioDoc = await db.collection("projetoAmor").doc("diario").get();
+                if (diarioDoc.exists && diarioDoc.data().memorias) {
+                    diaryEntries = diarioDoc.data().memorias;
+                }
+                renderDiary();
+
+            } catch (error) { console.error("Erro no Firebase:", error); }
+        }
+        
+        // Iniciar Magia
+        carregarMagiaDoFirebase();
+
+        // =========================================
+        // LÓGICA DE LOGIN (ENROLADOS)
+        // =========================================
+        const telaLogin = document.getElementById('tela-login');
+        const telaEntrada = document.getElementById('tela-entrada');
+        const inputSenha = document.getElementById('input-senha');
+        const btnLogin = document.getElementById('btn-login');
+        const msgErro = document.getElementById('msg-erro');
+        
+        const btnToggleSenha = document.getElementById('btn-toggle-senha');
+        const iconeOlhoFechado = document.getElementById('icone-olho-fechado');
+        const iconeOlhoAberto = document.getElementById('icone-olho-aberto');
+
+        if (btnLogin && inputSenha) {
+            if (btnToggleSenha) {
+                btnToggleSenha.addEventListener('click', () => {
+                    if (inputSenha.type === 'password') {
+                        inputSenha.type = 'text';
+                        iconeOlhoFechado.classList.add('hidden');
+                        iconeOlhoAberto.classList.remove('hidden');
+                    } else {
+                        inputSenha.type = 'password';
+                        iconeOlhoAberto.classList.add('hidden');
+                        iconeOlhoFechado.classList.remove('hidden');
+                    }
+                });
+            }
+
+            btnLogin.addEventListener('click', () => {
+                const senhaDigitada = inputSenha.value.trim().toLowerCase();
+                if (senhaDigitada === 'rapunzel' || senhaDigitada === 'amor' || senhaDigitada === 'amo-te' || senhaDigitada === 'te amo') {
+                    telaLogin.classList.add('hidden-screen');
+                    telaEntrada.classList.remove('hidden-screen');
+                    telaEntrada.classList.add('animate-fade-in');
+                    
+                    const bgSol = document.getElementById('bg-sol-login');
+                    if (bgSol) bgSol.classList.add('hidden-screen');
+
+                    const bgR = document.getElementById('bg-r-magico');
+                    if (bgR) {
+                        bgR.classList.remove('hidden-screen');
+                        bgR.classList.add('animate-fade-in');
+                    }
+                } else {
+                    msgErro.classList.remove('hidden');
+                    inputSenha.classList.add('border-red-400');
+                    inputSenha.value = ''; 
+                    
+                    setTimeout(() => {
+                        msgErro.classList.add('hidden');
+                        inputSenha.classList.remove('border-red-400');
+                    }, 3000);
+                }
+            });
+
+            inputSenha.addEventListener('keypress', (e) => {
+                if (e.key === 'Enter') btnLogin.click();
+            });
+        }
+
+        // =========================================
+        // EFEITOS E CONTADOR
+        // =========================================
+        function criarExplosaoLuzes() {
+            for (let i = 0; i < 40; i++) {
+                const particle = document.createElement('div');
+                particle.className = 'light-particle text-[#fde047]';
+                const angle = Math.random() * Math.PI * 2;
+                const distance = Math.random() * 300 + 100;
+                particle.style.setProperty('--tx', `${Math.cos(angle) * distance}px`);
+                particle.style.setProperty('--ty', `${Math.sin(angle) * distance}px`);
+                const size = Math.random() * 25 + 15;
+                particle.style.animationDuration = `${Math.random() * 2 + 1.5}s`;
+                particle.innerHTML = `<svg width="${size}" height="${size}" viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L15.09 8.26L22 9.27L17 14.14L18.18 21.02L12 17.77L5.82 21.02L7 14.14L2 9.27L8.91 8.26L12 2Z"/></svg>`;
+                document.body.appendChild(particle);
+                setTimeout(() => particle.remove(), 3500);
+            }
+        }
+
+        const btnRevelar = document.getElementById('btn-revelar');
+        const telaContador = document.getElementById('tela-contador');
+        const novasSecoes = document.getElementById('novas-secoes');
+
+        if (btnRevelar) {
+            btnRevelar.addEventListener('click', () => {
+                telaEntrada.classList.add('hidden-screen'); 
+                telaContador.classList.remove('hidden-screen'); 
+                telaContador.classList.add('animate-fade-in'); 
+                if (novasSecoes) novasSecoes.classList.remove('hidden-screen');
+                criarExplosaoLuzes();
+            });
+        }
+
+        function calcularTempo() {
+            const dataInicio = new Date(DATA_INICIO_NAMORO);
+            const agora = new Date();
+            let anos = agora.getFullYear() - dataInicio.getFullYear();
+            let meses = agora.getMonth() - dataInicio.getMonth();
+            let dias = agora.getDate() - dataInicio.getDate();
+            let horas = agora.getHours() - dataInicio.getHours();
+            let minutos = agora.getMinutes() - dataInicio.getMinutes();
+            let segundos = agora.getSeconds() - dataInicio.getSeconds();
+            if (segundos < 0) { minutos--; segundos += 60; }
+            if (minutos < 0) { horas--; minutos += 60; }
+            if (horas < 0) { dias--; horas += 24; }
+            if (dias < 0) { meses--; const mesAnterior = new Date(agora.getFullYear(), agora.getMonth(), 0); dias += mesAnterior.getDate(); }
+            if (meses < 0) { anos--; meses += 12; }
+            if (document.getElementById('valor-anos')) document.getElementById('valor-anos').innerText = anos;
+            if (document.getElementById('valor-meses')) document.getElementById('valor-meses').innerText = meses;
+            if (document.getElementById('valor-dias')) document.getElementById('valor-dias').innerText = dias;
+            const formatarZeros = (num) => num < 10 ? `0${num}` : num;
+            if (document.getElementById('valor-relogio')) document.getElementById('valor-relogio').innerText = `${formatarZeros(horas)} : ${formatarZeros(minutos)} : ${formatarZeros(segundos)}`;
+        }
+        setInterval(calcularTempo, 1000);
+        calcularTempo();
+
+        const heartsContainer = document.getElementById('hearts-container');
+        if(heartsContainer) {
+            for (let i = 0; i < 35; i++) {
+                const el = document.createElement('div');
+                el.className = 'heart-float absolute';
+                el.style.left = `${Math.random() * 100}%`;
+                el.style.animationDuration = `${Math.random() * 7 + 6}s`; 
+                el.style.animationDelay = `${Math.random() * 5}s`;
+                el.style.setProperty('--max-opacity', Math.random() * 0.4 + 0.2);
+                
+                const isLantern = Math.random() > 0.4; 
+
+                if (isLantern) {
+                    const w = Math.random() * 12 + 10;
+                    const h = w * 1.4;
+                    el.style.width = `${w}px`;
+                    el.style.height = `${h}px`;
+                    el.style.background = 'linear-gradient(to bottom, #fef08a, #fbbf24)';
+                    el.style.borderRadius = '2px 2px 3px 3px';
+                    el.style.boxShadow = '0 0 15px 3px rgba(253, 224, 71, 0.5)';
+                } else {
+                    el.style.color = '#ff6b9e';
+                    el.innerHTML = `<svg width="${Math.random() * 12 + 10}" height="${Math.random() * 12 + 10}" viewBox="0 0 24 24" fill="currentColor" class="opacity-60"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>`;
+                }
+                heartsContainer.appendChild(el);
+            }
+        }
+
+        // =========================================
+        // PLAYERS DE MÚSICA
+        // =========================================
+        const btnRevealMusic = document.getElementById('btn-reveal-music');
+        const customMusicUi = document.getElementById('custom-music-ui');
+        const spotifyContainer = document.getElementById('spotify-player-container');
+        const musicIconContainer = document.getElementById('music-icon-container');
+        const musicTitle = document.getElementById('music-title');
+        const musicSubtitle = document.getElementById('music-subtitle');
+        const musicCard = document.getElementById('music-card');
+
+        if (btnRevealMusic) {
+            btnRevealMusic.addEventListener('click', () => {
+                customMusicUi.classList.add('hidden');
+                musicIconContainer.classList.add('hidden');
+                musicSubtitle.classList.add('hidden');
+                musicTitle.classList.remove('text-2xl', 'mb-2');
+                musicTitle.classList.add('text-lg', 'font-medium', 'mb-4', 'text-[#facc15]');
+                musicTitle.innerHTML = '<span class="text-[#facc15] text-xl mr-2">☀️</span> A Nossa Música <span class="text-[#facc15] text-xl ml-2">☀️</span>';
+                if(musicCard) {
+                    musicCard.classList.remove('p-8');
+                    musicCard.classList.add('p-5');
+                }
+                spotifyContainer.classList.remove('hidden');
+            });
+        }
+
+        const btnRevealMusic2 = document.getElementById('btn-reveal-music-2');
+        const customMusicUi2 = document.getElementById('custom-music-ui-2');
+        const spotifyContainer2 = document.getElementById('spotify-player-container-2');
+        const musicIconContainer2 = document.getElementById('music-icon-container-2');
+        const musicTitle2 = document.getElementById('music-title-2');
+        const musicSubtitle2 = document.getElementById('music-subtitle-2');
+        const musicCard2 = document.getElementById('music-card-2');
+
+        if (btnRevealMusic2) {
+            btnRevealMusic2.addEventListener('click', () => {
+                customMusicUi2.classList.add('hidden');
+                musicIconContainer2.classList.add('hidden');
+                musicSubtitle2.classList.add('hidden');
+                musicTitle2.classList.remove('text-2xl', 'mb-2');
+                musicTitle2.classList.add('text-lg', 'font-medium', 'mb-4', 'text-[#facc15]');
+                musicTitle2.innerHTML = '<span class="text-[#facc15] text-xl mr-2">☀️</span> Nossas Trilhas Sonoras <span class="text-[#facc15] text-xl ml-2">☀️</span>';
+                if(musicCard2) {
+                    musicCard2.classList.remove('p-8');
+                    musicCard2.classList.add('p-5');
+                }
+                spotifyContainer2.classList.remove('hidden');
+            });
+        }
+
+        // =========================================
+        // CARROSSEL DE FOTOS
+        // =========================================
+        let currentImgIndex = 0;
+        const imgEl = document.getElementById('carousel-img');
+        const captionEl = document.getElementById('carousel-caption');
+        const counterEl = document.getElementById('carousel-counter');
+        const indicatorsContainer = document.getElementById('carousel-indicators');
+        const thumbnailsContainer = document.getElementById('carousel-thumbnails');
+        const btnPrev = document.getElementById('btn-prev');
+        const btnNext = document.getElementById('btn-next');
+
+        function updateCarousel() {
+            if (!imgEl || carouselData.length === 0) return;
+            
+            imgEl.style.opacity = '0.4';
+            captionEl.style.opacity = '0';
+            
+            setTimeout(() => {
+                imgEl.src = carouselData[currentImgIndex].img;
+                captionEl.innerText = carouselData[currentImgIndex].caption;
+                counterEl.innerText = `${currentImgIndex + 1} / ${carouselData.length}`;
+                
+                imgEl.style.opacity = '1';
+                captionEl.style.opacity = '1';
+                
+                if (indicatorsContainer) {
+                    indicatorsContainer.innerHTML = '';
+                    carouselData.forEach((_, index) => {
+                        const dot = document.createElement('div');
+                        if (index === currentImgIndex) {
+                            dot.className = 'w-4 h-1.5 bg-[#facc15] rounded-full transition-all duration-300 shadow-[0_0_8px_rgba(250,204,21,0.8)]';
+                        } else {
+                            dot.className = 'w-1.5 h-1.5 bg-white/40 rounded-full transition-all duration-300 cursor-pointer hover:bg-white/80';
+                            dot.onclick = () => {
+                                currentImgIndex = index;
+                                updateCarousel();
+                            };
+                        }
+                        indicatorsContainer.appendChild(dot);
+                    });
+                }
+
+                if (thumbnailsContainer) {
+                    thumbnailsContainer.innerHTML = '';
+                    carouselData.forEach((item, index) => {
+                        const thumb = document.createElement('button');
+                        const isActive = index === currentImgIndex;
+                        
+                        thumb.className = `relative w-14 h-14 rounded-xl overflow-hidden flex-shrink-0 transition-all duration-300 cursor-pointer border-2 ${isActive ? 'border-[#facc15] scale-110 opacity-100 shadow-[0_0_12px_rgba(250,204,21,0.5)] z-10' : 'border-transparent opacity-40 hover:opacity-80 scale-100'}`;
+                        
+                        thumb.onclick = () => {
+                            if (currentImgIndex !== index) {
+                                currentImgIndex = index;
+                                updateCarousel();
+                            }
+                        };
+
+                        const img = document.createElement('img');
+                        img.src = item.img;
+                        img.className = 'w-full h-full object-cover';
+                        
+                        thumb.appendChild(img);
+                        thumbnailsContainer.appendChild(thumb);
+                    });
+                }
+            }, 250);
+        }
+
+        if (btnPrev && btnNext) {
+            btnPrev.addEventListener('click', () => {
+                currentImgIndex = (currentImgIndex - 1 + carouselData.length) % carouselData.length;
+                updateCarousel();
+            });
+            btnNext.addEventListener('click', () => {
+                currentImgIndex = (currentImgIndex + 1) % carouselData.length;
+                updateCarousel();
+            });
+        }
+
+        // =========================================
+        // LÓGICA DO DIÁRIO
+        // =========================================
+        const diaryContainer = document.getElementById('diary-entries-container');
+        const btnAddMemory = document.getElementById('btn-add-memory');
+        const diaryForm = document.getElementById('diary-form');
+        const btnCancelMemory = document.getElementById('btn-cancel-memory');
+        const btnSaveMemory = document.getElementById('btn-save-memory');
+        const titleInput = document.getElementById('diary-title-input');
+        const textInput = document.getElementById('diary-text-input');
+
+        function formatarDataAtual() {
+            const data = new Date();
+            const dia = String(data.getDate()).padStart(2, '0');
+            const meses = ["Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho", "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"];
+            const mes = meses[data.getMonth()];
+            const ano = data.getFullYear();
+            return `${dia} de ${mes}, ${ano}`;
+        }
+
+        function renderDiary() {
+            if (!diaryContainer) return;
+            diaryContainer.innerHTML = ''; 
+            
+            diaryEntries.forEach((entry, index) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = `pb-6 ${index !== diaryEntries.length - 1 ? 'border-b border-[#facc15]/10 mb-6' : ''}`;
+                entryDiv.innerHTML = `
+                    <span class="text-[#facc15]/80 text-xs font-mono tracking-wider">${entry.date}</span>
+                    <h3 class="text-[#fef08a] font-serif text-xl mt-2 mb-3">${entry.title}</h3>
+                    <p class="text-white/80 font-light text-sm leading-relaxed italic">
+                        "${entry.text}"
+                    </p>
+                `;
+                diaryContainer.appendChild(entryDiv);
+            });
+        }
+
+        if (btnAddMemory && diaryForm && btnCancelMemory && btnSaveMemory) {
+            btnAddMemory.addEventListener('click', () => {
+                btnAddMemory.classList.add('hidden');
+                diaryForm.classList.remove('hidden');
+                diaryForm.classList.add('flex');
+                titleInput.focus();
+            });
+
+            btnCancelMemory.addEventListener('click', () => {
+                diaryForm.classList.add('hidden');
+                diaryForm.classList.remove('flex');
+                btnAddMemory.classList.remove('hidden');
+                titleInput.value = '';
+                textInput.value = '';
+            });
+
+            btnSaveMemory.addEventListener('click', async () => {
+                const title = titleInput.value.trim();
+                const text = textInput.value.trim();
+
+                if (title && text) {
+                    const newEntry = {
+                        date: formatarDataAtual(),
+                        title: title,
+                        text: text
+                    };
+
+                    diaryEntries.unshift(newEntry);
+                    
+                    try {
+                        // Salva direto no Firebase agora!
+                        await db.collection("projetoAmor").doc("diario").set({ memorias: diaryEntries });
+                    } catch(e) { console.error("Erro ao guardar no Firebase", e); }
+                    
+                    renderDiary();
+                    btnCancelMemory.click(); 
+                } else {
+                    if (!title) titleInput.classList.add('border-red-400');
+                    if (!text) textInput.classList.add('border-red-400');
+                    
+                    setTimeout(() => {
+                        titleInput.classList.remove('border-red-400');
+                        textInput.classList.remove('border-red-400');
+                    }, 2000);
+                }
+            });
+        }
+
+        // =========================================
+        // LÓGICA DO MURAL DE FOTOS
+        // =========================================
+        const muralContainer = document.getElementById('mural-entries-container');
+
+        function renderMural() {
+            if (!muralContainer) return;
+            muralContainer.innerHTML = ''; 
+            
+            muralEntries.forEach((entry) => {
+                const entryDiv = document.createElement('div');
+                entryDiv.className = 'relative group rounded-xl overflow-hidden border border-[#facc15]/30 aspect-square bg-black/40 shadow-lg cursor-pointer transform hover:scale-105 transition-all duration-300';
+                
+                let legendHtml = '';
+                if(entry.caption) {
+                    legendHtml = `
+                        <div class="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/90 via-black/60 to-transparent p-2 pt-6 text-center opacity-0 group-hover:opacity-100 transition-opacity duration-300 pointer-events-none">
+                            <span class="text-[#fde047] text-xs font-serif italic drop-shadow-md">${entry.caption}</span>
+                        </div>
+                    `;
+                }
+
+                entryDiv.innerHTML = `
+                    <img src="${entry.url}" class="w-full h-full object-cover" alt="Foto do Mural" onerror="this.src='https://images.unsplash.com/photo-1518190586940-025983777a8b?q=80&w=300&auto=format&fit=crop'"/>
+                    ${legendHtml}
+                `;
+                muralContainer.appendChild(entryDiv);
+            });
+        }
+
+    </script>
+</body>
+</html>
